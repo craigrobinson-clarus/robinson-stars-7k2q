@@ -1,20 +1,25 @@
 // Points Bank: reads the sheet for the telly and writes new rows from the grown ups page.
-// 1. Change FAMILY_CODE to something only you two know.
-// 2. Deploy > New deployment > Web app. Execute as: Me. Who has access: Anyone.
-// 3. Copy the URL ending in /exec into DATA_URL at the top of index.html.
+// The family code is NOT in this file. Set it once in Project Settings > Script properties:
+//   Property: FAMILY_CODE   Value: your code
+// That way pasting a new copy of this file never wipes it.
+// Deploy: Manage deployments > pencil > New version > Deploy (keeps the same /exec link).
 
-const FAMILY_CODE = 'CHANGE_ME';   // the real code lives only in the Apps Script editor, never commit it
 const CALENDAR_NAME = 'Family';   // the one calendar shown on the telly. Set to '' to hide the week.
 
 function doGet(e) {
   const p = (e && e.parameter) || {};
-  if (p.action === 'check') return json({ ok: codeOk(p.key) });
+  if (p.action === 'check') return json({ ok: codeOk(p.key), codeSet: !!familyCode() });
   if (p.action === 'add') return json(add(p));
   return json(read());
 }
 
+function familyCode() {
+  return String(PropertiesService.getScriptProperties().getProperty('FAMILY_CODE') || '').trim();
+}
+
 function codeOk(key) {
-  return FAMILY_CODE !== 'CHANGE_ME' && key === FAMILY_CODE;
+  const code = familyCode();
+  return !!code && String(key || '').trim() === code;
 }
 
 function read() {

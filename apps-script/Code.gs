@@ -23,7 +23,9 @@ function read() {
     const sheet = ss.getSheetByName(name);
     return sheet ? sheet.getDataRange().getDisplayValues() : [];
   };
-  return { transactions: tab('Transactions'), jobs: tab('Jobs'), events: week() };
+  let events = null;
+  try { events = week(); } catch (err) { events = null; }   // a calendar problem should never stop the points loading
+  return { transactions: tab('Transactions'), jobs: tab('Jobs'), events: events };
 }
 
 function week() {

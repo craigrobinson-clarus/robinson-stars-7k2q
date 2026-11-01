@@ -9,6 +9,7 @@ A reward points board for Craig's daughters, Millie (4) and Grace (2). It shows 
   - no action or `action=read` returns `{ transactions, jobs, events }` (sheet rows as display values, plus events from today to the end of next week from the "Family" Google Calendar)
   - `action=check&key=` checks the family code
   - `action=add&key=&type=points|job&...` appends a row
+- `read()` wraps the calendar call in try/catch, so a calendar permission problem returns `events: null` (week strip hidden) instead of breaking the points.
 - The Apps Script is NOT deployed from this repo. Changes to Code.gs must be pasted into the Apps Script editor by Craig and redeployed via Manage deployments, then New version (this keeps the same /exec URL).
 - The real family code is never committed. Keep `FAMILY_CODE = 'CHANGE_ME'` in this copy.
 
@@ -25,6 +26,7 @@ A reward points board for Craig's daughters, Millie (4) and Grace (2). It shows 
 - Grown ups page has tabs: Today (tick off jobs), Points (earn, spend, undo), Plan (jobs for today, tomorrow or every day, for one or both girls).
 - Cards are always side by side: Millie left with the "pop" theme (night concert stage, neon, sparkles), Grace right with the "ice" theme (snowy wonderland, crystal trees, falling snow). Both are original designs. Do not use or imitate characters, logos or artwork from any film or franchise.
 - The TV refreshes every 30 seconds. `patchBoard()` only replaces the card content and week strip so the animated backgrounds keep running. Keep it that way.
+- After each render `fitCards()` checks whether a card's content is taller than the card on the TV and, if so, sets `data-fit` 1 to 4 on it, each step a bit tighter (smaller meter and header, then two column jobs, then hiding the goal line). Keep new card content working with these steps rather than letting it cut off.
 - The week strip under the cards has three columns: Today, This week (the rest of the Monday to Sunday week) and Next week. Up to 3 lines each, ending in "and N more" when there are too many to fit. Icons per event come from the keyword map in `ICONS`, or a leading emoji in the event title.
 - Leaving DATA_URL blank runs demo mode with sample data.
 

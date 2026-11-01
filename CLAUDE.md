@@ -10,6 +10,7 @@ A reward points board for Craig's daughters, Millie (4) and Grace (2). It shows 
   - `action=check&key=` checks the family code
   - `action=add&key=&type=points|job&...` appends a row
 - `read()` wraps the calendar call in try/catch, so a calendar problem returns `events: null` (week strip hidden) plus the reason in `calendarError`, instead of breaking the points. Check it by opening the /exec link in a browser.
+- `apps-script/appsscript.json` is the script's manifest. It lists the permissions (sheet and calendar read only) so Google always asks for Calendar access. If Code.gs ever needs a new Google service, add its scope there too.
 - The Apps Script is NOT deployed from this repo. Changes to Code.gs must be pasted into the Apps Script editor by Craig and redeployed via Manage deployments, then New version (this keeps the same /exec URL).
 - The real family code is never committed. Keep `FAMILY_CODE = 'CHANGE_ME'` in this copy.
 

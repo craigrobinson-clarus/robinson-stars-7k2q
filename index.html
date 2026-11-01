@@ -187,21 +187,22 @@
   .kid .emo img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
 
-  /* This week strip */
-  .week { flex: none; display: grid; grid-template-columns: 1fr 1.25fr 1.25fr; gap: .8vw; }
-  .day { background: var(--surface); border-radius: 1.2vw; padding: .7vw .9vw; display: flex; flex-direction: column; gap: .35vw; min-width: 0; height: clamp(70px, 9vw, 230px); overflow: hidden; }
-  .day.today { box-shadow: inset 0 0 0 .22vw #ffe066; }
-  .day-h { display: flex; justify-content: space-between; align-items: baseline; font-weight: 800; font-size: clamp(12px, 1.35vw, 34px); }
-  .day-h span { color: var(--muted); font-weight: 700; }
-  .ev { display: flex; gap: .4em; align-items: flex-start; font-size: clamp(11px, 1.15vw, 28px); line-height: 1.2; min-width: 0; }
-  .ev .i { flex: none; font-size: 1.15em; }
-  .ev .tx { min-width: 0; }
-  .ev .tm { display: block; font-weight: 800; color: var(--muted); font-size: .85em; line-height: 1.1; }
-  .ev .tt { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-weight: 600; }
-  .week .ev { align-items: center; }
-  .week .ev .tm { display: inline; margin-right: .35em; }
-  .week .ev .tt { display: inline; }
-  .week .ev .tx { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* Upcoming events row */
+  .week { flex: none; display: grid; grid-template-columns: repeat(var(--tiles, 5), minmax(0, 1fr)); gap: .9vw; }
+  .ev-tile { border-radius: 1.3vw; padding: .8vw 1.1vw; display: flex; flex-direction: column; gap: .35vw; min-width: 0; height: clamp(110px, 14vw, 360px); overflow: hidden; }
+  .ev-tile.for-adults { background: var(--surface); color: var(--text); }
+  .ev-tile.for-kids { --k1: #ff4fb3; --k2: #1690e6; background: linear-gradient(135deg, var(--k1), var(--k2)); color: #fff; }
+  .ev-tile.today { box-shadow: inset 0 0 0 .3vw #ffe066; }
+  .ev-tile .when { font-size: clamp(15px, 1.85vw, 48px); font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ev-tile .when .tm { font-weight: 700; opacity: .85; }
+  .ev-tile .what { flex: 1; min-height: 0; display: flex; gap: .4em; align-items: flex-start; font-size: clamp(15px, 1.8vw, 46px); font-weight: 700; line-height: 1.15; }
+  .ev-tile .what .i { flex: none; font-size: 1.2em; line-height: 1; }
+  .ev-tile .what .tt { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .ev-tile .who { font-size: clamp(12px, 1.35vw, 34px); font-weight: 800; letter-spacing: .02em; }
+  .ev-tile.for-adults .who { color: var(--muted); }
+  .ev-tile.for-kids .who { color: #fff; opacity: .95; }
+  .ev-tile.for-kids .when .tm { color: #fff; }
+  .ev-tile.empty { grid-column: 1 / -1; background: var(--surface); color: var(--muted); justify-content: center; align-items: center; font-size: clamp(15px, 1.8vw, 46px); font-weight: 700; height: auto; padding: 1.4vw; }
   .tv.has-week .recent { display: none; }
   /* Tighter steps, added by fitCards() only when a card would otherwise cut off its jobs */
   .content[data-fit] { gap: .6vw; }
@@ -210,20 +211,22 @@
   .content[data-fit] .track { height: clamp(18px, 2.4vw, 60px); }
   .content[data-fit] .jobs { padding: .6vw 1.2vw; }
   .content[data-fit] .jobs-h { margin-bottom: .2vw; }
-  .content[data-fit="2"] .balance, .content[data-fit="3"] .balance, .content[data-fit="4"] .balance { font-size: clamp(40px, 5.6vw, 150px); }
-  .content[data-fit="2"] .avatar, .content[data-fit="3"] .avatar, .content[data-fit="4"] .avatar { font-size: clamp(22px, 2.8vw, 70px); }
-  .content[data-fit="2"] .name, .content[data-fit="3"] .name, .content[data-fit="4"] .name { font-size: clamp(24px, 3.2vw, 80px); }
+  .content[data-fit="2"] .balance, .content[data-fit="3"] .balance, .content[data-fit="4"] .balance, .content[data-fit="5"] .balance { font-size: clamp(40px, 5.6vw, 150px); }
+  .content[data-fit="2"] .avatar, .content[data-fit="3"] .avatar, .content[data-fit="4"] .avatar, .content[data-fit="5"] .avatar { font-size: clamp(22px, 2.8vw, 70px); }
+  .content[data-fit="2"] .name, .content[data-fit="3"] .name, .content[data-fit="4"] .name, .content[data-fit="5"] .name { font-size: clamp(24px, 3.2vw, 80px); }
   .content[data-fit="3"] .goal { font-size: clamp(15px, 1.8vw, 46px); }
-  .content[data-fit="4"] .goal { display: none; }
-  .content[data-fit="3"] .jobs ul, .content[data-fit="4"] .jobs ul { grid-template-columns: 1fr 1fr; column-gap: 1.6vw; font-size: clamp(13px, 1.5vw, 38px); }
-  .ev.more, .day .none { color: var(--muted); font-size: clamp(10px, 1vw, 24px); }
+  .content[data-fit="4"] .goal, .content[data-fit="5"] .goal { display: none; }
+  .content[data-fit="5"] .jobs ul { font-size: clamp(12px, 1.3vw, 32px) !important; gap: 0; }
+  .content[data-fit="5"] .jobs-h { font-size: clamp(12px, 1.4vw, 34px); margin-bottom: 0; }
+  .content[data-fit="5"] .meter { padding-top: clamp(20px, 2.4vw, 60px); }
+  .content[data-fit="5"] .stops { height: clamp(20px, 2.4vw, 60px); }
+  .content[data-fit="3"] .jobs ul, .content[data-fit="4"] .jobs ul, .content[data-fit="5"] .jobs ul { grid-template-columns: 1fr 1fr; column-gap: 1.6vw; font-size: clamp(13px, 1.5vw, 38px); }
 
   /* Always side by side: Millie on the left, Grace on the right. Narrow screens just get smaller text. */
   @media (max-width: 760px) {
     .tv { padding: 12px 10px 0; gap: 10px; height: auto; min-height: 100%; overflow: visible; }
     .board { grid-template-rows: auto; }
     .card > .content { overflow: visible; }
-    .day { height: auto; }
     .board { gap: 10px; }
     .card { padding: 14px 10px 12px; border-radius: 18px; }
     .card > .content { gap: 8px; }
@@ -245,9 +248,9 @@
     .recent { font-size: 11px; }
     .pop .bolt { width: 16px; }
     .foot { padding-bottom: 70px; }
-    .week { grid-template-columns: 1fr; gap: 8px; }
-    .day { border-radius: 12px; padding: 8px 10px; gap: 4px; }
-    .day.today { box-shadow: inset 0 0 0 2px #ffe066; }
+    .week { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .ev-tile { border-radius: 12px; padding: 8px 10px; gap: 4px; height: auto; min-height: 92px; }
+    .ev-tile.today { box-shadow: inset 0 0 0 3px #ffe066; }
   }
 
   /* ============ Gate and code screens ============ */
@@ -334,6 +337,14 @@ const CONFIG = {
     { label: "Kind without being asked", points: 10 },
     { label: "Fighting or hitting", points: -5 }
   ],
+  // Jobs every girl gets every day without setting them up. Remove one for a girl from the Plan tab like any other job.
+  DAILY_JOBS: [
+    { id: "teeth", job: "Brushing teeth", points: 5 },
+    { id: "bed", job: "Making their bed", points: 5 }
+  ],
+  // Events on the board count as kids events if they mention a child's name or one of these words. Everything else is grown ups.
+  KIDS_WORDS: ["nursery", "school", "pre school", "class", "gymnastic", "swim", "party", "play date", "soft play", "ballet", "dance", "football", "health visitor", "zoo", "farm"],
+  EVENT_TILES: 5,   // how many upcoming events show in the row under the cards
   REWARDS: [
     { label: "Treat", cost: 50, emoji: "🍦" },
     { label: "Toy shop", cost: 200, emoji: "🧸" }
@@ -470,6 +481,10 @@ function entries() {
 function allJobs() {
   const seen = new Set(state.jobRows.map(r => r.id + "|" + r.status));
   const map = new Map();
+  CONFIG.CHILDREN.forEach(ch => CONFIG.DAILY_JOBS.forEach(d => {
+    const id = `daily-${d.id}-${ch.name.toLowerCase()}`;
+    map.set(id, { id, day: "daily", child: ch.name, job: d.job, points: d.points, status: "added" });
+  }));
   state.jobRows.concat(state.jobPending.filter(p => !seen.has(p.id + "|" + p.status))).forEach(j => map.set(j.id, j));
   return [...map.values()].filter(j => j.status !== "removed");
 }
@@ -610,7 +625,7 @@ const worldFor = theme => theme === "pop" ? popWorld() : theme === "ice" ? iceWo
 /* The week ahead, from the Family calendar */
 const ICONS = [
   [/swim/i, "🏊"], [/birthday|bday/i, "🎂"], [/party/i, "🎉"], [/nursery|school|pre ?school|class/i, "🏫"],
-  [/dentist/i, "🦷"], [/doctor|\bgp\b|nurse|jab|vaccin|hospital/i, "🩺"], [/holiday|flight|airport/i, "✈️"],
+  [/dentist/i, "🦷"], [/doctor|\bgp\b|nurse|health visitor|jab|vaccin|hospital/i, "🩺"], [/holiday|flight|airport|\btrip\b/i, "✈️"], [/\bbins?\b/i, "🗑️"],
   [/dance|ballet/i, "🩰"], [/football|soccer/i, "⚽"], [/gymnastic|tumble/i, "🤸"], [/park|picnic/i, "🌳"],
   [/nana|nan\b|grandma|granny|grandad|grandpa|grandparent/i, "💛"], [/hair/i, "💇"], [/cinema|film|movie/i, "🍿"],
   [/play ?date|soft ?play/i, "🧸"], [/zoo|farm/i, "🐮"], [/beach|seaside/i, "🏖️"], [/music|sing/i, "🎵"]
@@ -621,13 +636,9 @@ function eventIcon(title) {
   const hit = ICONS.find(([re]) => re.test(title));
   return { icon: hit ? hit[1] : "📅", text: title };
 }
-/* Today, the rest of this Mon to Sun week, and next week, as three summary columns */
+/* Upcoming events as one row of tiles, soonest on the left. Kids events are colourful, grown ups events plain. */
 function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
 const shortDay = d => d.toLocaleDateString("en-GB", { weekday: "short" });
-function spanText(a, b) {
-  const m = d => d.toLocaleDateString("en-GB", { month: "short" });
-  return a.getMonth() === b.getMonth() ? `${a.getDate()} to ${b.getDate()} ${m(b)}` : `${a.getDate()} ${m(a)} to ${b.getDate()} ${m(b)}`;
-}
 /* Events that touch the days from..to (inclusive), each listed once from the first day it shows */
 function eventsBetween(from, to) {
   const a = dayKey(from), b = dayKey(to);
@@ -639,36 +650,40 @@ function eventsBetween(from, to) {
     return { ev, first: s < a ? a : s, last: lastDay > b ? b : lastDay };
   }).filter(Boolean).sort((x, y) => x.first.localeCompare(y.first) || (y.ev.allDay - x.ev.allDay) || String(x.ev.start).localeCompare(String(y.ev.start)));
 }
-function summaryColumn(cls, title, sub, items, withDay, empty, max) {
-  const fit = items.length > max ? max - 1 : max;   // keep room for the "and N more" line
-  const shown = items.slice(0, fit).map(({ ev, first, last }) => {
-    const { icon, text } = eventIcon(ev.title || "");
-    const d1 = new Date(first + "T12:00"), d2 = new Date(last + "T12:00");
-    const when = [];
-    if (withDay) when.push(first === last ? shortDay(d1) : `${shortDay(d1)} to ${shortDay(d2)}`);
-    if (!ev.allDay) when.push(String(ev.start).slice(11, 16).replace(/^0/, ""));
-    const tm = when.length ? `<span class="tm">${when.join(" ")}</span>` : "";
-    return `<div class="ev"><span class="i" aria-hidden="true">${icon}</span><span class="tx">${tm}<span class="tt">${esc(text)}</span></span></div>`;
-  }).join("");
-  const more = items.length > fit ? `<div class="ev more">and ${items.length - fit} more</div>` : "";
-  return `<div class="day ${cls}">
-    <div class="day-h">${title}<span>${sub}</span></div>
-    ${shown || `<div class="none">${empty}</div>`}${more}
-  </div>`;
+/* Who an event is for: one girl, "kids" for both or a kids activity, or "" for grown ups */
+function eventFor(title) {
+  const named = CONFIG.CHILDREN.filter(ch => new RegExp("\\b" + ch.name + "\\b", "i").test(title));
+  if (named.length === 1) return named[0];
+  if (named.length > 1 || CONFIG.KIDS_WORDS.some(w => new RegExp("\\b" + w, "i").test(title))) return "kids";
+  return "";
+}
+function dayLabel(key) {
+  if (key === todayKey()) return "Today";
+  if (key === tomorrowKey()) return "Tomorrow";
+  const d = new Date(key + "T12:00");
+  return `${shortDay(d)} ${d.getDate()}`;
 }
 function weekHtml() {
   if (!state.events) return "";
-  const today = new Date(); today.setHours(12, 0, 0, 0);
-  const dow = (today.getDay() + 6) % 7;            // Monday is 0
-  const weekEnd = addDays(today, 6 - dow);          // this Sunday
-  const nextMon = addDays(weekEnd, 1), nextSun = addDays(weekEnd, 7);
-  const rest = dow < 6 ? eventsBetween(addDays(today, 1), weekEnd) : [];
-  return [
-    summaryColumn("today", "Today", today.getDate(), eventsBetween(today, today), false, "Nothing on today", 3),
-    summaryColumn("this-week", "This week", dow < 6 ? spanText(addDays(today, 1), weekEnd) : "", rest, true,
-      dow < 6 ? "Nothing else this week" : "That’s the week done", 3),
-    summaryColumn("next-week", "Next week", spanText(nextMon, nextSun), eventsBetween(nextMon, nextSun), true, "Nothing planned yet", 3)
-  ].join("");
+  const now = new Date(), nowStamp = stamp(now).replace(" ", "T");
+  const items = eventsBetween(now, addDays(now, 60))
+    .filter(({ ev }) => ev.allDay || String(ev.end) > nowStamp)   // drop anything already finished today
+    .slice(0, CONFIG.EVENT_TILES);
+  if (!items.length) return `<div class="ev-tile empty">Nothing on in the next two weeks</div>`;
+  return items.map(({ ev, first, last }) => {
+    const { icon, text } = eventIcon(ev.title || "");
+    const who = eventFor(ev.title || "");
+    const kind = who ? "for-kids" : "for-adults";
+    const colour = who && who !== "kids" ? ` style="--k1:${who.colour};--k2:${who.colour}"` : "";
+    const tag = who ? `⭐ ${who === "kids" ? "Kids" : esc(who.name)}` : "Grown ups";
+    const days = first === last ? dayLabel(first) : `${dayLabel(first)} to ${shortDay(new Date(last + "T12:00"))}`;
+    const time = ev.allDay ? "" : ` <span class="tm">${String(ev.start).slice(11, 16).replace(/^0/, "")}</span>`;
+    return `<div class="ev-tile ${kind} ${first === todayKey() ? "today" : ""}"${colour}>
+      <div class="when"><b>${days}</b>${time}</div>
+      <div class="what"><span class="i" aria-hidden="true">${icon}</span><span class="tt">${esc(text)}</span></div>
+      <div class="who">${tag}</div>
+    </div>`;
+  }).join("");
 }
 
 function boardParts() {
@@ -731,7 +746,7 @@ function renderBoard() {
       `<section class="card ${c.ch.theme || ""}" style="--c:${c.ch.colour};--c-soft:${c.ch.soft}">
         ${worldFor(c.ch.theme)}<div class="content" style="--seg:${c.seg}">${c.html}</div>
       </section>`).join("")}</main>
-    <section class="week" aria-label="The week ahead" ${week ? "" : "hidden"}>${week}</section>
+    <section class="week" style="--tiles:${CONFIG.EVENT_TILES}" aria-label="Coming up" ${week ? "" : "hidden"}>${week}</section>
     <footer class="foot"><span>${esc(status)}</span></footer>
     <button class="grownups" data-go="admin">🔒 Grown ups</button>
   </div>`;
@@ -755,7 +770,7 @@ function fitCards() {
   document.querySelectorAll(".board .content").forEach(c => {
     c.removeAttribute("data-fit");
     if (window.innerWidth <= 760) return;
-    for (let level = 1; level <= 4 && c.scrollHeight > c.clientHeight + 1; level++) c.setAttribute("data-fit", level);
+    for (let level = 1; level <= 5 && c.scrollHeight > c.clientHeight + 1; level++) c.setAttribute("data-fit", level);
   });
 }
 const refit = () => { if (route() !== "admin") fitCards(); };

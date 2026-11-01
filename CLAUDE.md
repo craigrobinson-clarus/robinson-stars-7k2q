@@ -23,7 +23,7 @@ A reward points board for Craig's daughters, Millie (4) and Grace (2). It shows 
 
 ## The page
 
-- `CONFIG` at the top of the script holds DATA_URL (the Apps Script /exec link), children (name, theme, colour, emoji, optional photo filename), the ACTIONS list with point values, and REWARDS (Treat 50, Toy shop 200).
+- `CONFIG` at the top of the script holds DATA_URL (the Apps Script /exec link), children (name, theme, colour, emoji, optional photo filename), the ACTIONS list with point values (e.g. "Ate some new food" +20), and REWARDS (Treat 50, Toy shop 200).
 - Views: the TV board (default) and the grown ups page. Grown ups is a button bottom right, behind an easy adding sum (11 to 28 plus 3 to 9) (kept in sessionStorage) and then the family code (kept in localStorage per phone).
 - Jobs on the board are buttons: tapping one (from a phone or tablet showing the board) writes a `Job: …` points row with the job id, and tapping a done job writes a matching `Undo: Job: …` minus row. Writing needs the family code saved on that device; without it a toast points to Grown ups.
 - Grown ups page has tabs: Today (tick off jobs), Points (earn, spend, undo), Plan (jobs for today, tomorrow or every day, for one or both girls).
@@ -31,7 +31,7 @@ A reward points board for Craig's daughters, Millie (4) and Grace (2). It shows 
 - The TV refreshes every 30 seconds. `patchBoard()` only replaces the card content and week strip so the animated backgrounds keep running. Keep it that way.
 - After each render `fitCards()` checks whether a card's content is taller than the card on the TV and, if so, sets `data-fit` 1 to 5 on it, each step a bit tighter (smaller meter and header, then two column jobs, then hiding the goal line). Keep new card content working with these steps rather than letting it cut off.
 - The row under the cards shows the next `EVENT_TILES` (5) calendar events as tiles, soonest on the left, labelled Today, Tomorrow or e.g. "Thu 5". Kids events (title mentions a child's name or a word in `KIDS_WORDS`) are colourful with a star tag, using that child's colour if only one is named. Everything else is a plain "Grown ups" tile. Icons come from the keyword map in `ICONS`, or a leading emoji in the event title.
-- `DAILY_JOBS` in CONFIG are built in daily jobs for every child (ids like `daily-teeth-millie`). They are not rows in the sheet, but a "removed" row with the same id hides one, so the Plan tab can still remove them.
+- `DAILY_JOBS` in CONFIG are built in jobs that turn up on their own: teeth and bed for both girls every day, and Homework (+10) for Millie Monday to Friday. Optional `who` limits them to some children and `days` (0 Sun to 6 Sat) to some days. They are not rows in the sheet, but a "removed" row with the same id hides one, so the Plan tab can still remove them. Every day jobs have ids like `daily-teeth-millie`; set day jobs add the date (`daily-homework-millie-2026-11-02`) so removing one only skips that day.
 - Leaving DATA_URL blank runs demo mode with sample data.
 
 ## Constraints

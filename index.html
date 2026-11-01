@@ -342,12 +342,15 @@ const CONFIG = {
     { label: "Tidied up after themselves", points: 5 },
     { label: "Bedroom cleaned", points: 10 },
     { label: "Kind without being asked", points: 10 },
+    { label: "Ate some new food", points: 20 },
     { label: "Fighting or hitting", points: -5 }
   ],
-  // Jobs every girl gets every day without setting them up. Remove one for a girl from the Plan tab like any other job.
+  // Jobs that turn up on their own without setting them up. Remove one from the Plan tab like any other job.
+  // who: only these girls (leave out for everyone). days: only these days, 0 Sun, 1 Mon ... 6 Sat (leave out for every day).
   DAILY_JOBS: [
     { id: "teeth", job: "Brushing teeth", points: 5 },
-    { id: "bed", job: "Making their bed", points: 5 }
+    { id: "bed", job: "Making their bed", points: 5 },
+    { id: "homework", job: "Homework", points: 10, who: ["Millie"], days: [1, 2, 3, 4, 5] }
   ],
   // Events on the board count as kids events if they mention a child's name or one of these words. Everything else is grown ups.
   KIDS_WORDS: ["nursery", "school", "pre school", "class", "gymnastic", "swim", "party", "play date", "soft play", "ballet", "dance", "football", "health visitor", "zoo", "farm"],
@@ -488,9 +491,13 @@ function entries() {
 function allJobs() {
   const seen = new Set(state.jobRows.map(r => r.id + "|" + r.status));
   const map = new Map();
+  const weekday = new Date().getDay();
   CONFIG.CHILDREN.forEach(ch => CONFIG.DAILY_JOBS.forEach(d => {
-    const id = `daily-${d.id}-${ch.name.toLowerCase()}`;
-    map.set(id, { id, day: "daily", child: ch.name, job: d.job, points: d.points, status: "added" });
+    if (d.who && !d.who.some(n => same(n, ch.name))) return;
+    if (d.days && !d.days.includes(weekday)) return;
+    // Jobs for set days get today's date in the id, so removing one only skips today
+    const id = `daily-${d.id}-${ch.name.toLowerCase()}` + (d.days ? `-${todayKey()}` : "");
+    map.set(id, { id, day: d.days ? todayKey() : "daily", child: ch.name, job: d.job, points: d.points, status: "added" });
   }));
   state.jobRows.concat(state.jobPending.filter(p => !seen.has(p.id + "|" + p.status))).forEach(j => map.set(j.id, j));
   return [...map.values()].filter(j => j.status !== "removed");

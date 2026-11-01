@@ -24,6 +24,7 @@ A reward points board for Craig's daughters, Millie (4) and Grace (2). It shows 
 
 - `CONFIG` at the top of the script holds DATA_URL (the Apps Script /exec link), children (name, theme, colour, emoji, optional photo filename), the ACTIONS list with point values, and REWARDS (Treat 50, Toy shop 200).
 - Views: the TV board (default) and the grown ups page. Grown ups is a button bottom right, behind an easy adding sum (11 to 28 plus 3 to 9) (kept in sessionStorage) and then the family code (kept in localStorage per phone).
+- Jobs on the board are buttons: tapping one (from a phone or tablet showing the board) writes a `Job: …` points row with the job id, and tapping a done job writes a matching `Undo: Job: …` minus row. Writing needs the family code saved on that device; without it a toast points to Grown ups.
 - Grown ups page has tabs: Today (tick off jobs), Points (earn, spend, undo), Plan (jobs for today, tomorrow or every day, for one or both girls).
 - Cards are always side by side: Millie left with the "pop" theme (night concert stage, neon, sparkles), Grace right with the "ice" theme (snowy wonderland, crystal trees, falling snow). Both are original designs. Do not use or imitate characters, logos or artwork from any film or franchise.
 - The TV refreshes every 30 seconds. `patchBoard()` only replaces the card content and week strip so the animated backgrounds keep running. Keep it that way.

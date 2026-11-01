@@ -23,9 +23,10 @@ function read() {
     const sheet = ss.getSheetByName(name);
     return sheet ? sheet.getDataRange().getDisplayValues() : [];
   };
-  let events = null;
-  try { events = week(); } catch (err) { events = null; }   // a calendar problem should never stop the points loading
-  return { transactions: tab('Transactions'), jobs: tab('Jobs'), events: events };
+  // A calendar problem should never stop the points loading. The reason goes back as calendarError so it can be checked.
+  let events = null, calendarError = null;
+  try { events = week(); } catch (err) { calendarError = String((err && err.message) || err); }
+  return { transactions: tab('Transactions'), jobs: tab('Jobs'), events: events, calendarError: calendarError };
 }
 
 function week() {

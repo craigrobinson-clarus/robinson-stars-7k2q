@@ -9,7 +9,7 @@ A reward points board for Craig's daughters, Millie (4) and Grace (2). It shows 
   - no action or `action=read` returns `{ transactions, jobs, events }` (sheet rows as display values, plus events from today to the end of next week from the "Family" Google Calendar)
   - `action=check&key=` checks the family code
   - `action=add&key=&type=points|job&...` appends a row
-- `read()` wraps the calendar call in try/catch, so a calendar permission problem returns `events: null` (week strip hidden) instead of breaking the points.
+- `read()` wraps the calendar call in try/catch, so a calendar problem returns `events: null` (week strip hidden) plus the reason in `calendarError`, instead of breaking the points. Check it by opening the /exec link in a browser.
 - The Apps Script is NOT deployed from this repo. Changes to Code.gs must be pasted into the Apps Script editor by Craig and redeployed via Manage deployments, then New version (this keeps the same /exec URL).
 - The real family code is never committed. Keep `FAMILY_CODE = 'CHANGE_ME'` in this copy.
 

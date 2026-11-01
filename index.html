@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Points Bank</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #e6eeff; --surface: #ffffff; --raised: #f3f6ff; --text: #1b2858; --muted: #5d6a96;
+    --track: #d6dff7; --plus: #12865a; --minus: #c93a3a; --ink-on: #ffffff;
+    color-scheme: light;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141c44; --surface: #1f2a5e; --raised: #283570; --text: #fff4dc; --muted: #a9b3db;
+      --track: #34418a; --plus: #5be0a0; --minus: #ff8a8a; --ink-on: #141c44;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141c44; --surface: #1f2a5e; --raised: #283570; --text: #fff4dc; --muted: #a9b3db;
+    --track: #34418a; --plus: #5be0a0; --minus: #ff8a8a; --ink-on: #141c44;
+    color-scheme: dark;
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--text); font-family: "Baloo 2", "Trebuchet MS", "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  button:focus-visible, a:focus-visible, input:focus-visible { outline: 4px solid var(--text); outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+  /* ============ TV ============ */
+  .tv { height: 100vh; display: flex; flex-direction: column; padding: 1.6vw 2.6vw 0; gap: 1.2vw; overflow: hidden; }
+  .top { display: flex; justify-content: space-between; align-items: baseline; }
+  .brand { font-size: clamp(20px, 2.4vw, 60px); font-weight: 800; letter-spacing: -.01em; }
+  .brand span { color: var(--muted); font-weight: 600; }
+  .date { font-size: clamp(18px, 2.2vw, 56px); font-weight: 700; color: var(--muted); }
+  .board { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: minmax(0, 1fr); gap: 2.4vw; }
+  .card { background: var(--surface); border-radius: 2.4vw; padding: 1.5vw 2.2vw; min-height: 0; display: flex; flex-direction: column; gap: 1.2vw; min-width: 0; overflow: hidden; position: relative; }
+  .card::before { content: ""; position: absolute; inset: 0 0 auto; height: .8vw; background: var(--c); }
+  .head { display: flex; align-items: center; gap: 1.2vw; }
+  .avatar { flex: none; width: 1.6em; height: 1.6em; border-radius: 50%; display: grid; place-items: center; background: var(--c-soft); font-size: clamp(26px, 3.6vw, 90px); }
+  .name { font-size: clamp(28px, 4vw, 100px); font-weight: 800; line-height: 1; }
+  .balance { margin-left: auto; text-align: right; line-height: .85; font-size: clamp(48px, 7vw, 190px); font-weight: 800; color: var(--c); }
+  .balance small { display: block; font-size: .2em; color: var(--muted); font-weight: 700; line-height: 1.4; }
+
+  .meter { padding-top: clamp(30px, 3.6vw, 90px); position: relative; }
+  .stops { position: absolute; inset: 0 0 auto; height: clamp(30px, 3.6vw, 90px); }
+  .stop { position: absolute; bottom: .35vw; transform: translateX(-50%); white-space: nowrap; font-size: clamp(14px, 1.6vw, 40px); font-weight: 700; color: var(--muted); padding: .1em .55em; border-radius: 999px; background: var(--raised); }
+  .stop.end { transform: translateX(-100%); }
+  .stop.got { background: var(--c); color: var(--ink-on); }
+  .track { height: clamp(26px, 3.4vw, 84px); background: var(--track); border-radius: 999px; overflow: hidden; }
+  .fill { height: 100%; border-radius: 999px; background-color: var(--c); transition: width 1.2s cubic-bezier(.2,.8,.2,1);
+          background-image: repeating-linear-gradient(90deg, transparent 0 calc(5% - 3px), rgba(255,255,255,.38) calc(5% - 3px) 5%); background-size: var(--seg) 100%; }
+  .goal { font-size: clamp(18px, 2.3vw, 58px); font-weight: 700; line-height: 1.15; }
+  .goal.win { color: var(--c); }
+
+  .jobs { background: var(--raised); border-radius: 1.6vw; padding: 1vw 1.4vw; }
+  .jobs-h { display: flex; justify-content: space-between; font-size: clamp(15px, 1.7vw, 42px); font-weight: 800; margin-bottom: .4vw; }
+  .jobs-h span { color: var(--muted); font-weight: 700; }
+  .jobs ul { list-style: none; margin: 0; padding: 0; font-size: clamp(16px, 2vw, 50px); font-weight: 700; display: grid; gap: .3vw; }
+  .jobs li { display: flex; align-items: center; gap: .8vw; }
+  .box { flex: none; width: 1.1em; height: 1.1em; border: .13em solid var(--c); border-radius: .3em; display: grid; place-items: center; font-size: .9em; line-height: 1; color: var(--ink-on); }
+  .jobs li.done .box { background: var(--c); }
+  .jobs li.done .jt { text-decoration: line-through; color: var(--muted); }
+  .jobs b { margin-left: auto; color: var(--c); }
+  .jobs.all { text-align: center; font-size: clamp(18px, 2.2vw, 54px); font-weight: 800; color: var(--c); }
+
+  .recent { list-style: none; margin: auto 0 0; padding: 0; font-size: clamp(13px, 1.5vw, 36px); color: var(--muted); }
+  .recent li { display: flex; gap: .6em; }
+  .recent b { min-width: 2.6em; text-align: right; }
+  .recent .up { color: var(--plus); } .recent .down { color: var(--minus); }
+
+  .foot { flex: none; display: flex; align-items: center; justify-content: space-between; min-height: clamp(48px, 4.6vw, 120px); color: var(--muted); font-size: clamp(12px, 1.1vw, 28px); padding-bottom: .6vw; }
+  .grownups { position: fixed; right: calc(2.6vw + env(safe-area-inset-right, 0px)); bottom: calc(.9vw + env(safe-area-inset-bottom, 0px));
+              display: inline-flex; align-items: center; gap: .5em; padding: .5em 1.1em; border-radius: 999px; background: var(--text); color: var(--bg);
+              font-size: clamp(16px, 1.6vw, 40px); font-weight: 800; text-decoration: none; box-shadow: 0 .3vw 1.2vw rgba(10,15,40,.25); border: 0; z-index: 30; }
+  .grownups:hover { transform: translateY(-1px); }
+
+
+  /* ===== Two worlds. Same layout and behaviour, different places, so each girl spots hers without reading. ===== */
+  .card > .content { position: relative; z-index: 1; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: .9vw; overflow: hidden; padding: .4vw; margin: -.4vw; }
+  .world { position: absolute; inset: 0; z-index: 0; overflow: hidden; border-radius: inherit; pointer-events: none; }
+  .card.pop::before, .card.ice::before { display: none; }
+  .star4 { clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); }
+
+  /* Millie: pop concert at night */
+  .pop {
+    --text: #ffffff; --muted: rgba(255,255,255,.84); --raised: rgba(14,2,34,.64); --track: rgba(255,255,255,.16);
+    --c: #ff4fd0; --balance: #ffe066; --ink-on: #ffffff; --plus: #8dffc0; --minus: #ffa3a3;
+    --fill: linear-gradient(90deg, #8a3dff, #ff4fd0 55%, #ffe066);
+    --bg-a: radial-gradient(120% 60% at 50% 115%, rgba(255,47,160,.85) 0%, rgba(255,47,160,0) 60%);
+    --bg-b: linear-gradient(172deg, #0b0422 0%, #250a48 45%, #46105f 100%);
+  }
+  .card.pop { color: var(--text); border: max(3px, .3vw) solid transparent;
+    background: var(--bg-a) padding-box, var(--bg-b) padding-box, linear-gradient(115deg, #8a3dff, #ff4fd0, #3ff0ff, #ff4fd0, #8a3dff) border-box;
+    background-size: auto, auto, 300% 300%; animation: popborder 8s linear infinite; box-shadow: 0 0 2vw rgba(255,79,208,.35); }
+  @keyframes popborder { to { background-position: 0 0, 0 0, 300% 50%; } }
+  .pop .haze { position: absolute; inset: -20%; background: radial-gradient(40% 30% at 30% 35%, rgba(160,60,255,.5), transparent 70%), radial-gradient(40% 30% at 75% 62%, rgba(255,60,200,.32), transparent 70%); animation: haze 18s ease-in-out infinite alternate; }
+  @keyframes haze { to { transform: translate3d(6%, -4%, 0) scale(1.08); } }
+  .pop .beam { position: absolute; top: -12%; width: 34%; height: 125%; transform-origin: 50% 0; clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%); opacity: .5; animation: sway 8s ease-in-out infinite alternate; }
+  .pop .b1 { left: 0; background: linear-gradient(rgba(255,110,230,.75), rgba(255,110,230,0) 75%); --r1: -16deg; --r2: 8deg; }
+  .pop .b2 { left: 33%; background: linear-gradient(rgba(90,235,255,.6), rgba(90,235,255,0) 70%); --r1: 11deg; --r2: -11deg; animation-duration: 10s; }
+  .pop .b3 { left: 66%; background: linear-gradient(rgba(190,120,255,.65), rgba(190,120,255,0) 72%); --r1: 16deg; --r2: -7deg; animation-duration: 9s; animation-delay: -3s; }
+  @keyframes sway { from { transform: rotate(var(--r1)); } to { transform: rotate(var(--r2)); } }
+  .pop .city { position: absolute; left: 0; bottom: 0; width: 100%; height: 30%; }
+  .pop .city .wins { animation: windows 4s steps(2) infinite; }
+  @keyframes windows { 50% { opacity: .55; } }
+  .pop .bolt { position: absolute; width: 3vw; fill: #3ff0ff; stroke: #eaffff; stroke-width: 2; opacity: 0; animation: flash 9s infinite; }
+  .pop .k1 { top: 30%; right: 5%; transform: rotate(14deg); }
+  .pop .k2 { top: 50%; left: 3%; width: 2.2vw; transform: rotate(-12deg); animation-duration: 11s; animation-delay: -4.5s; }
+  @keyframes flash { 0%, 88%, 100% { opacity: 0; } 89% { opacity: .9; } 90% { opacity: .15; } 91.5% { opacity: 1; } 94% { opacity: 0; } }
+  .pop .streak { position: absolute; top: -30%; left: -40%; width: 26%; height: 160%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.16), transparent); transform: rotate(25deg); animation: streak 7s ease-in-out infinite; }
+  @keyframes streak { 0%, 55% { transform: translateX(0) rotate(25deg); } 100% { transform: translateX(600%) rotate(25deg); } }
+  .pop .spark { position: absolute; left: var(--x); top: var(--y); width: var(--s); height: var(--s); background: #ffffff; opacity: 0; animation: rise var(--d) linear infinite; animation-delay: var(--t); }
+  .pop .spark.gold { background: #ffe066; }
+  .pop .spark.pink { background: #ff8ff0; }
+  @keyframes rise { 0% { transform: translateY(0) scale(.5) rotate(0); opacity: 0; } 15% { opacity: 1; } 70% { opacity: .9; } 100% { transform: translateY(-45vh) scale(1.1) rotate(90deg); opacity: 0; } }
+  .pop .name { text-shadow: 0 0 .06em #fff, 0 0 .2em #ff4fd0, 0 0 .45em rgba(255,79,208,.75); animation: neon 3.2s ease-in-out infinite; }
+  @keyframes neon { 50% { text-shadow: 0 0 .04em #fff, 0 0 .12em #ff4fd0, 0 0 .24em rgba(255,79,208,.45); } }
+  .pop .avatar { background: rgba(20,4,40,.6); box-shadow: 0 0 0 .08em #ff4fd0, 0 0 .45em rgba(255,79,208,.85); }
+  .pop .goal, .pop .recent, .pop .jobs-h, .pop .jobs li { text-shadow: 0 .06em .25em rgba(0,0,0,.6); }
+  .pop .stop { background: rgba(14,2,34,.72); color: #fff; }
+  .pop .stop.got { background: var(--c); }
+  .pop .jobs { border: 1px solid rgba(255,79,208,.4); }
+  .pop .track { box-shadow: inset 0 0 0 1px rgba(255,255,255,.18); }
+
+  /* Grace: snowy wonderland */
+  .ice {
+    --text: #0b3760; --muted: #3b6590; --raised: rgba(255,255,255,.74); --track: rgba(255,255,255,.88);
+    --c: #1a8fe3; --balance: #0a6fc9; --ink-on: #ffffff; --plus: #08794a; --minus: #c0302c;
+    --fill: linear-gradient(90deg, #a5f0ff, #4fc3f7 45%, #1a6fe3 80%, #8f7cf0);
+  }
+  .card.ice { color: var(--text); border: max(3px, .3vw) solid transparent;
+    background: linear-gradient(180deg, #eaf6ff 0%, #d4ebff 42%, #e4dcfa 78%, #f5f9ff 100%) padding-box,
+                linear-gradient(120deg, #ffffff, #a9dcff, #ece6ff, #c7f2ff, #ffffff) border-box;
+    background-size: auto, 300% 300%; animation: iceborder 12s linear infinite;
+    box-shadow: inset 0 0 2.2vw rgba(255,255,255,.95), 0 0 1.6vw rgba(160,210,255,.35); }
+  @keyframes iceborder { to { background-position: 0 0, 300% 50%; } }
+  .ice .aurora { position: absolute; left: -30%; width: 160%; height: 38%; border-radius: 50%; opacity: .75; animation: aurora 16s ease-in-out infinite alternate; }
+  .ice .a1 { top: -8%; background: linear-gradient(100deg, transparent 15%, rgba(110,235,225,.55) 35%, rgba(170,150,255,.45) 55%, transparent 80%); }
+  .ice .a2 { top: 6%; height: 26%; background: linear-gradient(80deg, transparent 20%, rgba(150,200,255,.45) 45%, rgba(210,170,255,.42) 60%, transparent 85%); animation-duration: 21s; animation-delay: -7s; }
+  @keyframes aurora { from { transform: translateX(-6%) skewY(-4deg); } to { transform: translateX(6%) skewY(3deg); } }
+  .ice .trees { position: absolute; left: 0; bottom: 0; width: 100%; height: 36%; }
+  .ice .trees .tl { fill: url(#tl); } .ice .trees .tr { fill: url(#tr); }
+  .ice .trees line { stroke: rgba(255,255,255,.95); stroke-width: .8; }
+  .ice .trees .ground { fill: #ffffff; }
+  .ice .frost { position: absolute; inset: 0; background: radial-gradient(circle at 0 0, rgba(255,255,255,.95), rgba(255,255,255,0) 18%), radial-gradient(circle at 100% 0, rgba(255,255,255,.9), rgba(255,255,255,0) 16%), radial-gradient(circle at 0 100%, rgba(255,255,255,.8), rgba(255,255,255,0) 16%), radial-gradient(circle at 100% 100%, rgba(255,255,255,.85), rgba(255,255,255,0) 18%); animation: frost 7s ease-in-out infinite alternate; }
+  @keyframes frost { to { opacity: .6; } }
+  .ice .snow { position: absolute; top: -3%; left: var(--x); width: var(--s); height: var(--s); border-radius: 50%; background: #fff; box-shadow: 0 0 .35vw rgba(110,180,255,.9); animation: fall var(--d) linear infinite; animation-delay: var(--t); }
+  @keyframes fall { to { transform: translate3d(var(--drift), 80vh, 0); } }
+  .ice .crystal { position: absolute; top: -6%; left: var(--x); width: var(--s); height: var(--s); overflow: visible; animation: fallspin var(--d) linear infinite; animation-delay: var(--t); }
+  .ice .crystal use { stroke: #ffffff; }
+  .ice .crystal .halo { fill: rgba(120,190,255,.35); }
+  @keyframes fallspin { to { transform: translate3d(2vw, 80vh, 0) rotate(240deg); } }
+  .ice .glint { position: absolute; left: var(--x); top: var(--y); width: var(--s); height: var(--s); background: #ffffff; animation: twinkle var(--d) ease-in-out infinite; animation-delay: var(--t); }
+  @keyframes twinkle { 0%, 100% { transform: scale(.2) rotate(0); opacity: 0; } 50% { transform: scale(1) rotate(45deg); opacity: 1; } }
+  .ice .name { font-family: "Cinzel", Georgia, "Times New Roman", serif; font-weight: 700; letter-spacing: .02em; color: #0e4f8f; text-shadow: 0 0 .25em rgba(255,255,255,.95), 0 .03em 0 #fff; }
+  .ice .avatar { background: rgba(255,255,255,.75); box-shadow: 0 0 0 .07em #d9ecff, 0 0 0 .13em #8fc6f5, 0 0 .5em rgba(255,255,255,.95); }
+  .ice .goal, .ice .recent { text-shadow: 0 0 .3em rgba(255,255,255,.95); }
+  .ice .stop { background: rgba(255,255,255,.88); }
+  .ice .jobs { border: 1px solid rgba(255,255,255,.95); box-shadow: 0 .3vw 1.2vw rgba(70,130,200,.15); }
+  .ice .track { box-shadow: inset 0 1px 3px rgba(40,90,150,.25); }
+
+  /* Shimmering point totals */
+  .pop .balance, .ice .balance { -webkit-background-clip: text; background-clip: text; color: transparent; background-size: 250% 100%; animation: iri 7s linear infinite; }
+  .pop .balance { background-image: linear-gradient(100deg, #ffe066 0%, #ff8ff0 30%, #8ff4ff 55%, #ffe066 80%); filter: drop-shadow(0 0 .05em rgba(255,79,208,.9)); }
+  .ice .balance { background-image: linear-gradient(100deg, #0a5fb8 0%, #22a8e0 35%, #7f6ce8 55%, #0a5fb8 80%); filter: drop-shadow(0 .03em 0 rgba(255,255,255,.95)); animation-duration: 10s; }
+  .pop .balance small, .ice .balance small { color: var(--muted); -webkit-text-fill-color: var(--muted); }
+  @keyframes iri { to { background-position: -250% 0; } }
+  .pop .fill, .ice .fill { background-image: repeating-linear-gradient(90deg, transparent 0 calc(5% - 3px), rgba(255,255,255,.4) calc(5% - 3px) 5%), var(--fill); background-size: var(--seg) 100%, 100% 100%; }
+  .avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+
+  /* Matching buttons on the phone */
+  .kid.pop { background: linear-gradient(135deg, #1a0838, #5a1170 60%, #9b1f79); color: #fff; }
+  .kid.ice { background: linear-gradient(135deg, #f2f9ff, #d6ebff 55%, #e3dbfb); color: #0b3760; }
+  .kid.pop .emo { background: rgba(255,255,255,.18); box-shadow: 0 0 0 2px #ff4fd0; }
+  .kid.ice .emo { background: #ffffff; box-shadow: 0 0 0 2px #8fc6f5; }
+  .kid.ice .emo + * { font-family: inherit; }
+  .kid b { color: var(--balance, var(--c)); }
+  .kid .emo img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+
+
+  /* This week strip */
+  .week { flex: none; display: grid; grid-template-columns: repeat(7, 1fr); gap: .8vw; }
+  .day { background: var(--surface); border-radius: 1.2vw; padding: .7vw .9vw; display: flex; flex-direction: column; gap: .35vw; min-width: 0; height: clamp(70px, 9vw, 230px); overflow: hidden; }
+  .day.today { box-shadow: inset 0 0 0 .22vw #ffe066; }
+  .day-h { display: flex; justify-content: space-between; align-items: baseline; font-weight: 800; font-size: clamp(12px, 1.35vw, 34px); }
+  .day-h span { color: var(--muted); font-weight: 700; }
+  .ev { display: flex; gap: .4em; align-items: flex-start; font-size: clamp(11px, 1.15vw, 28px); line-height: 1.2; min-width: 0; }
+  .ev .i { flex: none; font-size: 1.15em; }
+  .ev .tx { min-width: 0; }
+  .ev .tm { display: block; font-weight: 800; color: var(--muted); font-size: .85em; line-height: 1.1; }
+  .ev .tt { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-weight: 600; }
+  .tv.has-week .recent { display: none; }
+  .ev.more, .day .none { color: var(--muted); font-size: clamp(10px, 1vw, 24px); }
+
+  /* Always side by side: Millie on the left, Grace on the right. Narrow screens just get smaller text. */
+  @media (max-width: 760px) {
+    .tv { padding: 12px 10px 0; gap: 10px; height: auto; min-height: 100%; overflow: visible; }
+    .board { grid-template-rows: auto; }
+    .card > .content { overflow: visible; }
+    .day { height: auto; }
+    .board { gap: 10px; }
+    .card { padding: 14px 10px 12px; border-radius: 18px; }
+    .card > .content { gap: 8px; }
+    .card::before { height: 5px; }
+    .head { flex-wrap: wrap; gap: 6px; }
+    .avatar { font-size: 22px; }
+    .name { font-size: 20px; }
+    .balance { font-size: 40px; width: 100%; text-align: left; margin-left: 0; }
+    .meter { padding-top: 24px; }
+    .stops { height: 24px; }
+    .stop { font-size: 11px; }
+    .track { height: 16px; }
+    .goal { font-size: 14px; }
+    .jobs { border-radius: 12px; padding: 8px; }
+    .jobs-h { font-size: 12px; flex-direction: column; }
+    .jobs ul { font-size: 13px; gap: 4px; }
+    .jobs li { gap: 6px; }
+    .jobs.all { font-size: 14px; }
+    .recent { font-size: 11px; }
+    .pop .bolt { width: 16px; }
+    .foot { padding-bottom: 70px; }
+    .week { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 40%; overflow-x: auto; gap: 8px; padding-bottom: 4px; }
+    .day { border-radius: 12px; padding: 8px 10px; gap: 4px; min-height: 90px; }
+    .day.today { box-shadow: inset 0 0 0 2px #ffe066; }
+  }
+
+  /* ============ Gate and code screens ============ */
+  .gate { max-width: 420px; margin: 0 auto; padding: 48px 20px; text-align: center; }
+  .gate h1 { font-size: 28px; margin: 0 0 4px; }
+  .gate p { color: var(--muted); margin: 0 0 24px; }
+  .gate .sum { font-size: 60px; font-weight: 800; line-height: 1; margin-bottom: 20px; }
+  .gate input { width: 100%; font: inherit; font-size: 32px; font-weight: 700; text-align: center; padding: 10px; border-radius: 14px; border: 3px solid var(--track); background: var(--surface); color: var(--text); }
+  .gate input:focus { outline: none; border-color: var(--text); }
+  .primary { margin-top: 12px; width: 100%; border: 0; border-radius: 14px; padding: 14px; background: var(--text); color: var(--bg); font-size: 20px; font-weight: 800; }
+  .gate .wrong { color: var(--minus); font-weight: 700; min-height: 1.5em; margin-top: 10px; }
+  .gate .back { display: inline-block; margin-top: 18px; color: var(--muted); font-weight: 700; background: none; border: 0; text-decoration: underline; padding: 6px; }
+
+  /* ============ Grown ups page ============ */
+  .admin { max-width: 560px; margin: 0 auto; padding: 0 16px 48px; }
+  .bar { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 12px 0 10px; }
+  .bar-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .bar-top h1 { font-size: 24px; margin: 0; }
+  .ghost { background: transparent; border: 2px solid var(--track); border-radius: 999px; padding: 4px 14px; font-weight: 700; color: var(--muted); text-decoration: none; font-size: 15px; }
+  .kids { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .kid { background: var(--surface); border: 3px solid transparent; border-radius: 16px; padding: 8px 12px; text-align: left; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; }
+  .kid .emo { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: var(--c-soft); font-size: 20px; flex: none; }
+  .kid b { margin-left: auto; font-size: 24px; color: var(--c); }
+  .kid[aria-pressed="true"] { border-color: var(--c); }
+  .tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: var(--surface); padding: 4px; border-radius: 14px; margin-top: 10px; }
+  .tab { border: 0; background: transparent; border-radius: 10px; padding: 8px 0; font-weight: 700; font-size: 16px; color: var(--muted); }
+  .tab[aria-selected="true"] { background: var(--text); color: var(--bg); }
+  .admin h2 { font-size: 17px; margin: 18px 0 8px; color: var(--muted); display: flex; justify-content: space-between; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .act { background: var(--surface); border: 0; border-radius: 14px; padding: 12px; text-align: left; font-size: 16px; line-height: 1.2; min-height: 66px; display: flex; flex-direction: column; justify-content: space-between; gap: 6px; }
+  .act .pts { font-weight: 800; font-size: 20px; color: var(--plus); }
+  .act.neg .pts { color: var(--minus); }
+  .act.spend .pts { color: var(--muted); }
+  .act.small { min-height: 54px; font-size: 15px; }
+  .act:disabled { opacity: .4; cursor: not-allowed; }
+  .act:active:not(:disabled), .done-btn:active:not(:disabled) { transform: scale(.97); }
+  .undo { margin-top: 18px; width: 100%; background: transparent; border: 2px solid var(--track); border-radius: 14px; padding: 12px; font-weight: 700; color: var(--muted); }
+  .undo:disabled { opacity: .45; }
+  .joblist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .joblist li { background: var(--surface); border-radius: 14px; padding: 8px 8px 8px 14px; display: flex; align-items: center; gap: 8px; font-size: 17px; min-height: 58px; }
+  .joblist .jt { flex: 1; line-height: 1.2; font-weight: 600; }
+  .joblist .jt small { display: block; color: var(--muted); font-weight: 500; font-size: 14px; }
+  .done-btn { border: 0; border-radius: 12px; padding: 10px 14px; background: var(--plus); color: var(--ink-on); font-weight: 800; white-space: nowrap; }
+  .done-btn:disabled { background: transparent; color: var(--plus); cursor: default; }
+  .x { border: 0; background: transparent; font-size: 22px; padding: 6px 10px; color: var(--muted); }
+  .empty { color: var(--muted); font-size: 15px; background: var(--surface); border-radius: 14px; padding: 14px; margin: 0; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { background: var(--surface); border: 2px solid transparent; border-radius: 999px; padding: 6px 14px; font-weight: 700; font-size: 16px; }
+  .chip[aria-pressed="true"] { border-color: var(--text); }
+  .custom { display: grid; grid-template-columns: 1fr 72px auto; gap: 6px; margin-top: 8px; }
+  .custom input { font: inherit; font-size: 16px; padding: 10px; border-radius: 12px; border: 2px solid var(--track); background: var(--surface); color: var(--text); min-width: 0; }
+  .custom input:focus { outline: none; border-color: var(--text); }
+  .custom button { border: 0; border-radius: 12px; padding: 0 16px; background: var(--text); color: var(--bg); font-weight: 800; }
+  .banner { background: var(--surface); border-radius: 12px; padding: 10px 12px; font-size: 14px; color: var(--muted); margin-top: 10px; }
+  .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%) translateY(20px); opacity: 0; visibility: hidden; background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-weight: 700; transition: transform .25s, opacity .25s, visibility .25s; white-space: nowrap; z-index: 20; }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; visibility: visible; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ===== Paste your Apps Script link here, then you're live. Leave it blank to try demo mode. ===== */
+const CONFIG = {
+  DATA_URL: "https://script.google.com/macros/s/AKfycbzYHcz9JWM3ZjPHzNfGOWq_nCXevpGF_DnpX31cVbXCdF_h1OQEnm8TZlPhE68jyYqr/exec",        // Apps Script web app URL, ends in /exec
+  REFRESH_SECONDS: 30,
+  CHILDREN: [
+    // photo: upload a picture next to index.html (e.g. millie.jpg) and put its name here. Leave "" for the icon.
+    { name: "Millie", theme: "pop", colour: "#ff4fb3", soft: "rgba(255,79,179,.2)", emoji: "🎤", photo: "" },
+    { name: "Grace",  theme: "ice", colour: "#1690e6", soft: "rgba(22,144,230,.2)", emoji: "❄️", photo: "" }
+  ],
+  ACTIONS: [
+    { label: "Homework: words", points: 10 },
+    { label: "Homework: numbers", points: 10 },
+    { label: "Good listening ears", points: 5 },
+    { label: "Shared with sister", points: 5 },
+    { label: "No fighting today", points: 10 },
+    { label: "Tidied toys away", points: 5 },
+    { label: "Clothes put away", points: 5 },
+    { label: "Plate and cutlery to the sink", points: 3 },
+    { label: "Tidied up after themselves", points: 5 },
+    { label: "Bedroom cleaned", points: 10 },
+    { label: "Kind without being asked", points: 10 },
+    { label: "Fighting or hitting", points: -5 }
+  ],
+  REWARDS: [
+    { label: "Treat", cost: 50, emoji: "🍦" },
+    { label: "Toy shop", cost: 200, emoji: "🧸" }
+  ]
+};
+/* ================================================================================================ */
+
+const pad = n => String(n).padStart(2, "0");
+const stamp = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const dayKey = d => stamp(d).slice(0, 10);
+const todayKey = () => dayKey(new Date());
+const tomorrowKey = () => { const d = new Date(); d.setDate(d.getDate() + 1); return dayKey(d); };
+function dayOf(str) {
+  const s = String(str || "").trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  return m ? `${m[3]}-${pad(m[2])}-${pad(m[1])}` : "";
+}
+const newId = () => "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const same = (a, b) => String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+const signed = n => (n > 0 ? "+" : n < 0 ? "−" : "") + Math.abs(n);
+const num = v => Number(String(v || "0").replace("−", "-").replace(/^'/, "")) || 0;
+const clean = v => String(v || "").replace(/^'/, "").trim();
+const face = ch => ch.photo ? `<img src="${esc(ch.photo)}" alt="">` : ch.emoji;
+
+const state = {
+  rows: [], pending: [], jobRows: [], jobPending: [],
+  events: null,
+  selected: CONFIG.CHILDREN[0].name, lastSent: null, tab: "today", planDay: "today", planBoth: false,
+  demo: !CONFIG.DATA_URL, error: null, updated: null, skip: new Set(), codeError: false, checking: false
+};
+if (state.demo) {
+  const t = todayKey();
+  state.rows = [
+    { id: "d1", date: "", child: "Millie", action: "Bedroom cleaned", points: 10, job: "" },
+    { id: "d2", date: "", child: "Grace", action: "Good listening ears", points: 5, job: "" },
+    { id: "d3", date: "", child: "Millie", action: "Shared with sister", points: 5, job: "" },
+    { id: "d4", date: "", child: "Grace", action: "Kind without being asked", points: 10, job: "" },
+    { id: "d5", date: "", child: "Grace", action: "Homework: numbers", points: 10, job: "" }
+  ];
+  const at = (add, hm) => { const d = new Date(); d.setDate(d.getDate() + add); return dayKey(d) + "T" + hm; };
+  state.events = [
+    { title: "Nursery", start: at(0, "09:00"), end: at(0, "12:00"), allDay: false },
+    { title: "Swimming", start: at(1, "16:30"), end: at(1, "17:15"), allDay: false },
+    { title: "Nana and Grandad visiting", start: at(2, "00:00"), end: at(4, "00:00"), allDay: true },
+    { title: "Dentist", start: at(3, "10:15"), end: at(3, "10:45"), allDay: false },
+    { title: "🎈 Ruby’s party", start: at(5, "13:00"), end: at(5, "15:00"), allDay: false },
+    { title: "Park and picnic", start: at(6, "11:00"), end: at(6, "13:00"), allDay: false }
+  ];
+  state.jobRows = [
+    { id: "j1", day: t, child: "Millie", job: "Homework: words", points: 10, status: "added" },
+    { id: "j2", day: "daily", child: "Millie", job: "Clothes put away", points: 5, status: "added" },
+    { id: "j3", day: t, child: "Grace", job: "Homework: numbers", points: 10, status: "added" },
+    { id: "j4", day: "daily", child: "Grace", job: "Tidied toys away", points: 5, status: "added" }
+  ];
+}
+
+/* Small storage helpers that never throw */
+const store = {
+  get(area, k) { try { return window[area].getItem(k); } catch (e) { return store.mem[k] || null; } },
+  set(area, k, v) { try { window[area].setItem(k, v); } catch (e) { store.mem[k] = v; } },
+  del(area, k) { try { window[area].removeItem(k); } catch (e) { delete store.mem[k]; } },
+  mem: {}
+};
+const nav = { view: location.hash === "#admin" ? "admin" : "board" };
+const route = () => nav.view;
+function go(view) {
+  nav.view = view;
+  try { history.replaceState(null, "", view === "admin" ? "#admin" : location.pathname + location.search); } catch (e) {}
+  state.codeError = false;
+  render();
+  try { window.scrollTo(0, 0); } catch (e) {}
+}
+
+/* Grown ups gate: a sum the girls can't do yet. Unlocked until this tab is closed or you tap Lock. */
+const gate = { a: 0, b: 0, wrong: false };
+function newSum() { gate.a = 12 + Math.floor(Math.random() * 8); gate.b = 6 + Math.floor(Math.random() * 4); }
+newSum();
+const isUnlocked = () => store.get("sessionStorage", "pb-unlocked") === "1";
+function checkGate() {
+  const v = parseInt((document.getElementById("answer") || {}).value, 10);
+  if (v === gate.a * gate.b) { gate.wrong = false; store.set("sessionStorage", "pb-unlocked", "1"); }
+  else { gate.wrong = true; newSum(); }
+  state.skip.add("answer");
+  render();
+}
+function lock() { store.del("sessionStorage", "pb-unlocked"); newSum(); go("board"); }
+
+/* Family code: entered once per phone, checked by the Apps Script on every change */
+const getCode = () => store.get("localStorage", "pb-code") || "";
+async function saveCode() {
+  const v = (document.getElementById("code") || {}).value || "";
+  if (!v.trim()) return;
+  state.checking = true; render();
+  try {
+    const r = await api({ action: "check", key: v.trim() });
+    if (r.ok) { store.set("localStorage", "pb-code", v.trim()); state.codeError = false; toast("Phone set up"); }
+    else { state.codeError = "wrong"; state.skip.add("code"); }
+  } catch (e) { state.codeError = "offline"; }
+  state.checking = false; render();
+}
+
+/* Reading the sheet */
+function table(rows, keys) {
+  if (!rows || !rows.length) return [];
+  const h = rows[0].map(x => String(x).trim().toLowerCase());
+  const idx = keys.map(k => h.indexOf(k));
+  return rows.slice(1).map(r => { const o = {}; keys.forEach((k, i) => o[k] = idx[i] >= 0 ? clean(r[idx[i]]) : ""); return o; });
+}
+const toEntries = rows => table(rows, ["date", "child", "action", "points", "id", "job"])
+  .filter(r => r.child).map(r => ({ ...r, points: num(r.points) }));
+const toJobs = rows => table(rows, ["date", "child", "job", "points", "id", "status"])
+  .filter(r => r.child && r.id).map(r => ({
+    id: r.id, child: r.child, job: r.job, points: num(r.points), status: (r.status || "added").toLowerCase(),
+    day: same(r.date, "daily") ? "daily" : dayOf(r.date)
+  }));
+
+async function api(params) {
+  const url = CONFIG.DATA_URL;
+  const res = await fetch(url + (url.includes("?") ? "&" : "?") + new URLSearchParams({ ...params, t: Date.now() }), { cache: "no-store" });
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
+}
+
+function entries() {
+  const ids = new Set(state.rows.map(r => r.id));
+  return state.rows.concat(state.pending.filter(p => !ids.has(p.id)));
+}
+function allJobs() {
+  const seen = new Set(state.jobRows.map(r => r.id + "|" + r.status));
+  const map = new Map();
+  state.jobRows.concat(state.jobPending.filter(p => !seen.has(p.id + "|" + p.status))).forEach(j => map.set(j.id, j));
+  return [...map.values()].filter(j => j.status !== "removed");
+}
+const forChild = (name, list) => list.filter(e => same(e.child, name));
+const balanceOf = (name, list) => forChild(name, list).reduce((s, e) => s + e.points, 0);
+const jobsFor = (name, key, withDaily) => allJobs().filter(j => same(j.child, name) && (j.day === key || (withDaily && j.day === "daily")));
+const isDone = (job, list) => list.filter(e => e.job === job.id && dayOf(e.date) === todayKey()).reduce((s, e) => s + e.points, 0) > 0;
+
+async function load() {
+  if (!state.demo) {
+    try {
+      const data = await api({ action: "read" });
+      state.rows = toEntries(data.transactions);
+      state.jobRows = toJobs(data.jobs);
+      state.events = Array.isArray(data.events) ? data.events : null;
+      const cutoff = Date.now() - 15 * 60 * 1000;
+      const ids = new Set(state.rows.map(r => r.id));
+      state.pending = state.pending.filter(p => !ids.has(p.id) && p.ts > cutoff);
+      const seen = new Set(state.jobRows.map(r => r.id + "|" + r.status));
+      state.jobPending = state.jobPending.filter(p => !seen.has(p.id + "|" + p.status) && p.ts > cutoff);
+      state.error = null; state.updated = new Date();
+    } catch (e) {
+      state.error = "Can’t reach the points sheet. Check the link at the top of the page.";
+    }
+  }
+  render();
+}
+
+/* Writing to the sheet */
+function write(params, undoLocal) {
+  if (state.demo) return;
+  api({ ...params, action: "add", key: getCode() }).then(r => {
+    if (r && r.ok) return;
+    undoLocal();
+    if (r && r.error === "code") { store.del("localStorage", "pb-code"); state.codeError = true; toast("Family code needed"); }
+    else toast("Not saved. Try again.");
+    render();
+  }).catch(() => { undoLocal(); toast("Not saved. Check your connection and try again."); render(); });
+}
+function send(child, action, points, message, jobId) {
+  const now = new Date();
+  const entry = { id: newId(), date: stamp(now), child, action, points, job: jobId || "", ts: now.getTime() };
+  if (state.demo) state.rows.push(entry);
+  else {
+    state.pending.push(entry);
+    write({ type: "points", id: entry.id, date: entry.date, child, label: action, points, job: entry.job },
+      () => { state.pending = state.pending.filter(p => p !== entry); if (state.lastSent === entry) state.lastSent = null; });
+  }
+  state.lastSent = entry;
+  toast(message);
+  render();
+}
+function writeJob(job) {
+  if (state.demo) { state.jobRows.push(job); return; }
+  const p = { ...job, ts: Date.now() };
+  state.jobPending.push(p);
+  write({ type: "job", id: job.id, date: job.day, child: job.child, job: job.job, points: job.points, status: job.status },
+    () => { state.jobPending = state.jobPending.filter(x => x !== p); });
+}
+function addJob(title, points) {
+  const day = state.planDay === "today" ? todayKey() : state.planDay === "tomorrow" ? tomorrowKey() : "daily";
+  const who = state.planBoth ? CONFIG.CHILDREN.map(c => c.name) : [state.selected];
+  who.forEach(child => writeJob({ id: newId(), day, child, job: title, points, status: "added" }));
+  toast(`Added for ${who.join(" and ")}`);
+  render();
+}
+function removeJob(id) {
+  const j = allJobs().find(x => x.id === id); if (!j) return;
+  writeJob({ ...j, status: "removed" });
+  toast("Job removed");
+  render();
+}
+
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+/* ============ TV view ============ */
+function rng(seed) { let x = seed; return () => (x = (x * 16807) % 2147483647) / 2147483647; }
+const f1 = n => n.toFixed(1);
+
+function popWorld() {
+  const r = rng(7);
+  const sparks = [];
+  for (let i = 0; i < 18; i++) {
+    const c = r(); const kind = c < .35 ? " gold" : c < .6 ? " pink" : "";
+    sparks.push(`<i class="spark star4${kind}" style="--x:${f1(r() * 96)}%;--y:${f1(40 + r() * 60)}%;--s:${(0.5 + r() * 1.1).toFixed(2)}vw;--d:${f1(6 + r() * 7)}s;--t:-${f1(r() * 12)}s"></i>`);
+  }
+  let x = 0, blocks = "", wins = "";
+  while (x < 400) {
+    const w = 14 + r() * 26, h = 22 + r() * 70;
+    blocks += `<rect x="${f1(x)}" y="${f1(120 - h)}" width="${f1(w)}" height="${f1(h)}"/>`;
+    for (let wy = 120 - h + 6; wy < 116; wy += 9)
+      for (let wx = x + 4; wx < x + w - 4; wx += 7)
+        if (r() < .3) wins += `<rect x="${f1(wx)}" y="${f1(wy)}" width="2.6" height="3.4" fill="${r() < .5 ? "#ff7ae6" : "#ffe066"}"/>`;
+    x += w + 2;
+  }
+  const bolt = `<path d="M24 0 L8 46 H20 L12 100 L34 38 H22 Z"/>`;
+  return `<div class="world" aria-hidden="true">
+    <i class="haze"></i><i class="beam b1"></i><i class="beam b2"></i><i class="beam b3"></i>
+    <svg class="city" viewBox="0 0 400 120" preserveAspectRatio="xMidYMax slice"><g fill="#120427">${blocks}</g><g class="wins">${wins}</g></svg>
+    <svg class="bolt k1" viewBox="0 0 40 100">${bolt}</svg><svg class="bolt k2" viewBox="0 0 40 100">${bolt}</svg>
+    <i class="streak"></i>${sparks.join("")}
+  </div>`;
+}
+
+function iceWorld() {
+  const r = rng(11);
+  const snow = [], glints = [], crystals = [];
+  for (let i = 0; i < 26; i++)
+    snow.push(`<i class="snow" style="--x:${f1(r() * 100)}%;--s:${(0.25 + r() * 0.55).toFixed(2)}vw;--d:${f1(9 + r() * 10)}s;--t:-${f1(r() * 18)}s;--drift:${f1(r() * 6 - 3)}vw"></i>`);
+  for (let i = 0; i < 5; i++)
+    crystals.push(`<svg class="crystal" viewBox="-12 -12 24 24" style="--x:${f1(r() * 92)}%;--s:${(1.4 + r() * 1.4).toFixed(2)}vw;--d:${f1(16 + r() * 10)}s;--t:-${f1(r() * 24)}s"><circle class="halo" r="7"/><use href="#pb-flake"/></svg>`);
+  for (let i = 0; i < 9; i++)
+    glints.push(`<i class="glint star4" style="--x:${f1(r() * 96)}%;--y:${f1(r() * 70)}%;--s:${(0.6 + r() * 0.9).toFixed(2)}vw;--d:${f1(3 + r() * 4)}s;--t:-${f1(r() * 6)}s"></i>`);
+  let trees = "";
+  [[150, 36], [250, 40], [18, 62], [52, 80], [86, 54], [128, 72], [300, 58], [334, 84], [366, 66], [396, 50]].forEach(([cx, h]) => {
+    const w = h * .42, base = 112;
+    trees += `<polygon class="tl" points="${cx},${base - h} ${cx - w / 2},${base} ${cx},${base}"/><polygon class="tr" points="${cx},${base - h} ${cx + w / 2},${base} ${cx},${base}"/><line x1="${cx}" y1="${base - h}" x2="${cx}" y2="${base}"/>`;
+  });
+  return `<div class="world" aria-hidden="true">
+    <svg width="0" height="0" style="position:absolute"><defs>
+      <g id="pb-flake" stroke-width="1.6" stroke-linecap="round" fill="none"><path d="M0-11V11M-9.5-5.5L9.5 5.5M-9.5 5.5L9.5-5.5M0-11l-3 3M0-11l3 3M0 11l-3-3M0 11l3-3M-9.5-5.5l4 .3M-9.5-5.5l1.7 3.6M9.5 5.5l-4-.3M9.5 5.5l-1.7-3.6M-9.5 5.5l1.7-3.6M-9.5 5.5l4-.3M9.5-5.5l-1.7 3.6M9.5-5.5l-4 .3"/></g>
+      <linearGradient id="tl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".95"/><stop offset="1" stop-color="#bfe4ff" stop-opacity=".6"/></linearGradient>
+      <linearGradient id="tr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe0ff" stop-opacity=".92"/><stop offset="1" stop-color="#9bbcf2" stop-opacity=".6"/></linearGradient>
+    </defs></svg>
+    <i class="aurora a1"></i><i class="aurora a2"></i>
+    <svg class="trees" viewBox="0 0 400 120" preserveAspectRatio="xMidYMax slice">${trees}<path class="ground" d="M0 108 Q60 98 120 106 T240 104 T400 102 V120 H0Z"/></svg>
+    <i class="frost"></i>${glints.join("")}${snow.join("")}${crystals.join("")}
+  </div>`;
+}
+const worldFor = theme => theme === "pop" ? popWorld() : theme === "ice" ? iceWorld() : "";
+
+
+/* This week, from the Family calendar */
+const ICONS = [
+  [/swim/i, "🏊"], [/birthday|bday/i, "🎂"], [/party/i, "🎉"], [/nursery|school|pre ?school|class/i, "🏫"],
+  [/dentist/i, "🦷"], [/doctor|\bgp\b|nurse|jab|vaccin|hospital/i, "🩺"], [/holiday|flight|airport/i, "✈️"],
+  [/dance|ballet/i, "🩰"], [/football|soccer/i, "⚽"], [/gymnastic|tumble/i, "🤸"], [/park|picnic/i, "🌳"],
+  [/nana|nan\b|grandma|granny|grandad|grandpa|grandparent/i, "💛"], [/hair/i, "💇"], [/cinema|film|movie/i, "🍿"],
+  [/play ?date|soft ?play/i, "🧸"], [/zoo|farm/i, "🐮"], [/beach|seaside/i, "🏖️"], [/music|sing/i, "🎵"]
+];
+function eventIcon(title) {
+  const m = String(title).match(/^(\p{Extended_Pictographic}(\uFE0F|\u200D\p{Extended_Pictographic})*)\s*/u);
+  if (m) return { icon: m[1], text: String(title).slice(m[0].length) };
+  const hit = ICONS.find(([re]) => re.test(title));
+  return { icon: hit ? hit[1] : "📅", text: title };
+}
+function weekHtml() {
+  if (!state.events) return "";
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(); d.setDate(d.getDate() + i);
+    const key = dayKey(d);
+    const items = state.events.filter(ev => {
+      const s = String(ev.start).slice(0, 10), e = String(ev.end).slice(0, 10);
+      return ev.allDay ? (s <= key && key < (e > s ? e : s + "~")) : s === key;
+    }).sort((a, b) => (b.allDay - a.allDay) || String(a.start).localeCompare(String(b.start)));
+    const label = i === 0 ? "Today" : i === 1 ? "Tomorrow" : d.toLocaleDateString("en-GB", { weekday: "short" });
+    const shown = items.slice(0, 3).map(ev => {
+      const { icon, text } = eventIcon(ev.title || "");
+      const tm = ev.allDay ? "" : `<span class="tm">${String(ev.start).slice(11, 16).replace(/^0/, "")}</span>`;
+      return `<div class="ev"><span class="i" aria-hidden="true">${icon}</span><span class="tx">${tm}<span class="tt">${esc(text)}</span></span></div>`;
+    }).join("");
+    const more = items.length > 3 ? `<div class="ev more">and ${items.length - 3} more</div>` : "";
+    days.push(`<div class="day ${i === 0 ? "today" : ""}">
+      <div class="day-h">${label}<span>${d.getDate()}</span></div>
+      ${shown || `<div class="none">Nothing on</div>`}${more}
+    </div>`);
+  }
+  return days.join("");
+}
+
+function boardParts() {
+  const list = entries();
+  const top = Math.max(...CONFIG.REWARDS.map(r => r.cost));
+  const sorted = CONFIG.REWARDS.slice().sort((a, b) => a.cost - b.cost);
+  const biggest = sorted[sorted.length - 1];
+  const cards = CONFIG.CHILDREN.map(ch => {
+    const bal = balanceOf(ch.name, list);
+    const pct = Math.max(0, Math.min(bal / top, 1)) * 100;
+    const stops = CONFIG.REWARDS.map(r => {
+      const left = r.cost / top * 100;
+      return `<span class="stop ${left >= 100 ? "end" : ""} ${bal >= r.cost ? "got" : ""}" style="left:${left}%">${r.emoji} ${r.cost}</span>`;
+    }).join("");
+    const next = sorted.find(r => r.cost > bal);
+    const goal = next
+      ? `<div class="goal">${next.cost - bal} more for a ${esc(next.label.toLowerCase())} ${next.emoji}</div>`
+      : `<div class="goal win">${esc(biggest.label)} unlocked! ${biggest.emoji}</div>`;
+    const jobs = jobsFor(ch.name, todayKey(), true);
+    const doneCount = jobs.filter(j => isDone(j, list)).length;
+    let jobsHtml = "";
+    if (jobs.length && doneCount === jobs.length) jobsHtml = `<div class="jobs all">All jobs done today! 🎉</div>`;
+    else if (jobs.length) jobsHtml = `<div class="jobs">
+        <div class="jobs-h">Today’s jobs <span>${doneCount} of ${jobs.length} done</span></div>
+        <ul>${jobs.map(j => {
+          const d = isDone(j, list);
+          return `<li class="${d ? "done" : ""}"><span class="box" aria-hidden="true">${d ? "✓" : ""}</span><span class="jt">${esc(j.job)}</span><b>+${j.points}</b></li>`;
+        }).join("")}</ul></div>`;
+    const recent = forChild(ch.name, list).slice(-3).reverse().map(e =>
+      `<li><b class="${e.points >= 0 ? "up" : "down"}">${signed(e.points)}</b><span>${esc(e.action)}</span></li>`).join("");
+    const html = `
+      <div class="head">
+        <span class="avatar" aria-hidden="true">${face(ch)}</span>
+        <span class="name">${esc(ch.name)}</span>
+        <span class="balance">${bal}<small>points</small></span>
+      </div>
+      <div class="meter">
+        <div class="stops">${stops}</div>
+        <div class="track" role="progressbar" aria-label="${esc(ch.name)}’s points" aria-valuemin="0" aria-valuemax="${top}" aria-valuenow="${Math.max(bal, 0)}">
+          <div class="fill" style="width:${pct}%"></div>
+        </div>
+      </div>
+      ${goal}
+      ${jobsHtml}
+      <ul class="recent">${recent || "<li>No points yet. Let’s get earning!</li>"}</ul>`;
+    return { ch, html, seg: `${10000 / Math.max(pct, 1)}%` };
+  });
+  const status = state.error ? state.error
+    : state.demo ? "Demo mode. Add your Apps Script link to go live."
+    : state.updated ? `Updated ${pad(state.updated.getHours())}:${pad(state.updated.getMinutes())}` : "Loading…";
+  const date = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+  return { cards, status, date, week: weekHtml() };
+}
+
+function renderBoard() {
+  const { cards, status, date, week } = boardParts();
+  return `<div class="tv ${week ? "has-week" : ""}">
+    <header class="top"><div class="brand">Points Bank</div><div class="date">${esc(date)}</div></header>
+    <main class="board">${cards.map(c =>
+      `<section class="card ${c.ch.theme || ""}" style="--c:${c.ch.colour};--c-soft:${c.ch.soft}">
+        ${worldFor(c.ch.theme)}<div class="content" style="--seg:${c.seg}">${c.html}</div>
+      </section>`).join("")}</main>
+    <section class="week" aria-label="This week" ${week ? "" : "hidden"}>${week}</section>
+    <footer class="foot"><span>${esc(status)}</span></footer>
+    <button class="grownups" data-go="admin">🔒 Grown ups</button>
+  </div>`;
+}
+
+/* Refreshes only the words and numbers, so the snow and sparkles keep moving without a jump */
+function patchBoard() {
+  const { cards, status, date, week } = boardParts();
+  const contents = document.querySelectorAll(".board .content");
+  if (contents.length !== cards.length) { document.getElementById("app").innerHTML = renderBoard(); return; }
+  cards.forEach((c, i) => { contents[i].style.setProperty("--seg", c.seg); contents[i].innerHTML = c.html; });
+  document.querySelector(".foot span").textContent = status;
+  document.querySelector(".date").textContent = date;
+  const wk = document.querySelector(".week");
+  if (wk) { wk.innerHTML = week; wk.hidden = !week; }
+  document.querySelector(".tv").classList.toggle("has-week", !!week);
+}
+
+/* ============ Gate and family code ============ */
+function renderGate() {
+  return `<div class="gate">
+    <h1>Grown ups only</h1>
+    <p>Answer the sum to open the points page.</p>
+    <div class="sum">${gate.a} × ${gate.b}</div>
+    <input id="answer" type="text" inputmode="numeric" autocomplete="off" aria-label="Your answer">
+    <button class="primary" data-check>Open</button>
+    <div class="wrong" role="alert">${gate.wrong ? "Not quite. Here’s a new one." : ""}</div>
+    <button class="back" data-go="board">Back to the board</button>
+  </div>`;
+}
+function renderCode() {
+  return `<div class="gate">
+    <h1>Set up this phone</h1>
+    <p>Enter your family code once. This phone will remember it.</p>
+    <input id="code" type="password" autocomplete="off" aria-label="Family code">
+    <button class="primary" data-savecode ${state.checking ? "disabled" : ""}>${state.checking ? "Checking…" : "Save code"}</button>
+    <div class="wrong" role="alert">${state.codeError === "offline"
+      ? "Can’t reach the points sheet. Check you’re online and the Apps Script link is deployed for anyone."
+      : state.codeError ? "The sheet says that code doesn’t match. Check the code in the Apps Script and redeploy." : ""}</div>
+    <button class="back" data-go="board">Back to the board</button>
+  </div>`;
+}
+
+/* ============ Grown ups page ============ */
+function renderAdmin() {
+  const list = entries();
+  const sel = CONFIG.CHILDREN.find(c => c.name === state.selected) || CONFIG.CHILDREN[0];
+  const bal = balanceOf(sel.name, list);
+  const kids = CONFIG.CHILDREN.map(ch =>
+    `<button class="kid ${ch.theme || ""}" style="--c:${ch.colour};--c-soft:${ch.soft}" data-kid="${esc(ch.name)}" aria-pressed="${ch.name === sel.name}">
+       <span class="emo" aria-hidden="true">${face(ch)}</span>${esc(ch.name)}<b>${balanceOf(ch.name, list)}</b></button>`).join("");
+  const tabs = [["today", "Today"], ["points", "Points"], ["plan", "Plan"]].map(([k, l]) =>
+    `<button class="tab" role="tab" data-tab="${k}" aria-selected="${state.tab === k}">${l}</button>`).join("");
+  const banner = state.error ? `<div class="banner">${esc(state.error)}</div>`
+    : state.demo ? `<div class="banner">Demo mode. Nothing is saved until the Apps Script link is set.</div>` : "";
+
+  let body = "";
+  if (state.tab === "today") {
+    const today = jobsFor(sel.name, todayKey(), true);
+    const doneCount = today.filter(j => isDone(j, list)).length;
+    body = `<h2>Today’s jobs for ${esc(sel.name)} <span>${today.length ? `${doneCount} of ${today.length}` : ""}</span></h2>` +
+      (today.length ? `<ul class="joblist">${today.map(j => {
+        const d = isDone(j, list);
+        return `<li><span class="jt">${esc(j.job)}${j.day === "daily" ? "<small>Every day</small>" : ""}</span>
+          <button class="done-btn" data-done="${esc(j.id)}" ${d ? "disabled" : ""}>${d ? "✓ Done" : `Done ${signed(j.points)}`}</button></li>`;
+      }).join("")}</ul>`
+      : `<p class="empty">No jobs for today yet. Add some in Plan.</p>`) +
+      `<button class="undo" data-undo ${state.lastSent ? "" : "disabled"}>Undo last</button>`;
+  } else if (state.tab === "points") {
+    const acts = CONFIG.ACTIONS.map((a, i) =>
+      `<button class="act ${a.points < 0 ? "neg" : ""}" data-act="${i}"><span>${esc(a.label)}</span><span class="pts">${signed(a.points)}</span></button>`).join("");
+    const spends = CONFIG.REWARDS.map((r, i) =>
+      `<button class="act spend" data-reward="${i}" ${bal < r.cost ? "disabled" : ""}><span>${r.emoji} ${esc(r.label)}</span><span class="pts">${signed(-r.cost)}</span></button>`).join("");
+    body = `<h2>Earn points for ${esc(sel.name)}</h2><div class="grid">${acts}</div>
+      <h2>Spend ${esc(sel.name)}’s points</h2><div class="grid">${spends}</div>
+      <button class="undo" data-undo ${state.lastSent ? "" : "disabled"}>Undo last</button>`;
+  } else {
+    const planKey = state.planDay === "today" ? todayKey() : state.planDay === "tomorrow" ? tomorrowKey() : "daily";
+    const planned = jobsFor(sel.name, planKey, false);
+    const dayChips = [["today", "Today"], ["tomorrow", "Tomorrow"], ["daily", "Every day"]].map(([k, l]) =>
+      `<button class="chip" data-planday="${k}" aria-pressed="${state.planDay === k}">${l}</button>`).join("");
+    const quick = CONFIG.ACTIONS.filter(a => a.points > 0).map(a =>
+      `<button class="act small" data-quick="${esc(a.label)}" data-pts="${a.points}"><span>${esc(a.label)}</span><span class="pts">${signed(a.points)}</span></button>`).join("");
+    body = `<h2>When</h2><div class="chips">${dayChips}<button class="chip" data-both aria-pressed="${state.planBoth}">Both girls</button></div>
+      <h2>Planned for ${esc(sel.name)}</h2>` +
+      (planned.length ? `<ul class="joblist">${planned.map(j =>
+        `<li><span class="jt">${esc(j.job)}<small>${signed(j.points)} points</small></span>
+          <button class="x" data-remove="${esc(j.id)}" aria-label="Remove ${esc(j.job)}">✕</button></li>`).join("")}</ul>`
+        : `<p class="empty">Nothing planned yet. Tap a job below to add it.</p>`) +
+      `<h2>Add a job</h2><div class="grid">${quick}</div>
+      <div class="custom">
+        <input id="jobname" type="text" placeholder="Something else" aria-label="Job name" autocomplete="off">
+        <input id="jobpts" type="number" inputmode="numeric" value="5" min="1" aria-label="Points">
+        <button data-addcustom>Add</button>
+      </div>`;
+  }
+
+  return `<div class="admin">
+    <div class="bar">
+      <div class="bar-top"><button class="ghost" data-go="board">TV view</button><h1>Points Bank</h1><button class="ghost" data-lock>Lock</button></div>
+      <div class="kids">${kids}</div>
+      <div class="tabs" role="tablist">${tabs}</div>
+      ${banner}
+    </div>
+    ${body}
+  </div>`;
+}
+
+/* Render, keeping anything half typed through the refresh */
+function render() {
+  const app = document.getElementById("app");
+  if (route() !== "admin") {
+    if (app.querySelector(".tv")) patchBoard(); else app.innerHTML = renderBoard();
+    return;
+  }
+  const saved = {};
+  app.querySelectorAll("input").forEach(i => saved[i.id] = i.value);
+  const focusId = document.activeElement && app.contains(document.activeElement) ? document.activeElement.id : "";
+  let view;
+  if (!isUnlocked()) view = renderGate();
+  else if (!state.demo && !getCode()) view = renderCode();
+  else view = renderAdmin();
+  app.innerHTML = view;
+  app.querySelectorAll("input").forEach(i => { if (i.id in saved && !state.skip.has(i.id)) i.value = saved[i.id]; });
+  state.skip.clear();
+  const f = focusId && document.getElementById(focusId);
+  if (f) f.focus();
+  else { const first = document.getElementById("answer") || document.getElementById("code"); if (first) first.focus(); }
+}
+
+document.getElementById("app").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b || b.disabled) return;
+  const name = state.selected;
+  if (b.dataset.go) return go(b.dataset.go);
+  if (b.hasAttribute("data-check")) return checkGate();
+  if (b.hasAttribute("data-savecode")) return saveCode();
+  if (b.hasAttribute("data-lock")) return lock();
+  if (b.dataset.kid) { state.selected = b.dataset.kid; return render(); }
+  if (b.dataset.tab) { state.tab = b.dataset.tab; return render(); }
+  if (b.dataset.planday) { state.planDay = b.dataset.planday; return render(); }
+  if (b.hasAttribute("data-both")) { state.planBoth = !state.planBoth; return render(); }
+  if (b.dataset.quick) return addJob(b.dataset.quick, num(b.dataset.pts));
+  if (b.hasAttribute("data-addcustom")) {
+    const title = document.getElementById("jobname").value.trim();
+    const pts = Math.max(1, Math.round(num(document.getElementById("jobpts").value)));
+    if (!title) { toast("Type a job name first"); return document.getElementById("jobname").focus(); }
+    state.skip.add("jobname");
+    return addJob(title, pts);
+  }
+  if (b.dataset.remove) return removeJob(b.dataset.remove);
+  if (b.dataset.done) {
+    const j = allJobs().find(x => x.id === b.dataset.done); if (!j) return;
+    return send(j.child, `Job: ${j.job}`, j.points, `${signed(j.points)} for ${j.child}`, j.id);
+  }
+  if (b.dataset.act !== undefined) {
+    const a = CONFIG.ACTIONS[+b.dataset.act];
+    return send(name, a.label, a.points, `${signed(a.points)} for ${name}`);
+  }
+  if (b.dataset.reward !== undefined) {
+    const r = CONFIG.REWARDS[+b.dataset.reward];
+    if (confirm(`Spend ${r.cost} of ${name}’s points on ${r.label.toLowerCase()}?`))
+      send(name, `Spent: ${r.label}`, -r.cost, `${name} spent ${r.cost} points`);
+    return;
+  }
+  if (b.hasAttribute("data-undo") && state.lastSent) {
+    const l = state.lastSent;
+    send(l.child, `Undo: ${l.action}`, -l.points, "Undone", l.job);
+    state.lastSent = null; render();
+  }
+});
+document.getElementById("app").addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  if (e.target.id === "answer") checkGate();
+  if (e.target.id === "code") saveCode();
+  if (e.target.id === "jobname" || e.target.id === "jobpts") document.querySelector("[data-addcustom]").click();
+});
+window.addEventListener("hashchange", () => { const v = location.hash === "#admin" ? "admin" : "board"; if (v !== nav.view) go(v); });
+load();
+setInterval(load, CONFIG.REFRESH_SECONDS * 1000);
+setInterval(() => { if (route() !== "admin") location.reload(); }, 60 * 60 * 1000);
+</script>
+</body>
+</html>

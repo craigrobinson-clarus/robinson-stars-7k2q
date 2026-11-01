@@ -414,12 +414,13 @@ function go(view) {
 
 /* Grown ups gate: a sum the girls can't do yet. Unlocked until this tab is closed or you tap Lock. */
 const gate = { a: 0, b: 0, wrong: false };
-function newSum() { gate.a = 12 + Math.floor(Math.random() * 8); gate.b = 6 + Math.floor(Math.random() * 4); }
+/* An easy adding sum for grown ups that a four year old can't do yet, like 17 + 6 */
+function newSum() { gate.a = 11 + Math.floor(Math.random() * 18); gate.b = 3 + Math.floor(Math.random() * 7); }
 newSum();
 const isUnlocked = () => store.get("sessionStorage", "pb-unlocked") === "1";
 function checkGate() {
   const v = parseInt((document.getElementById("answer") || {}).value, 10);
-  if (v === gate.a * gate.b) { gate.wrong = false; store.set("sessionStorage", "pb-unlocked", "1"); }
+  if (v === gate.a + gate.b) { gate.wrong = false; store.set("sessionStorage", "pb-unlocked", "1"); }
   else { gate.wrong = true; newSum(); }
   state.skip.add("answer");
   render();
@@ -767,7 +768,7 @@ function renderGate() {
   return `<div class="gate">
     <h1>Grown ups only</h1>
     <p>Answer the sum to open the points page.</p>
-    <div class="sum">${gate.a} × ${gate.b}</div>
+    <div class="sum">${gate.a} + ${gate.b}</div>
     <input id="answer" type="text" inputmode="numeric" autocomplete="off" aria-label="Your answer">
     <button class="primary" data-check>Open</button>
     <div class="wrong" role="alert">${gate.wrong ? "Not quite. Here’s a new one." : ""}</div>

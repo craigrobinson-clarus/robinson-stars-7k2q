@@ -6,7 +6,7 @@ A reward points board for Craig's daughters, Millie (4) and Grace (2). It shows 
 
 - `index.html` is the whole app: one self contained file, no build step. GitHub Pages serves it from the main branch root, so every push to main goes live within a minute or two.
 - `apps-script/Code.gs` is a copy of the Google Apps Script bound to the Points Bank Google Sheet. It is the only backend. The page calls it with GET requests:
-  - no action or `action=read` returns `{ transactions, jobs, events }` (sheet rows as display values, plus the next 7 days from the "Family" Google Calendar)
+  - no action or `action=read` returns `{ transactions, jobs, events }` (sheet rows as display values, plus events from today to the end of next week from the "Family" Google Calendar)
   - `action=check&key=` checks the family code
   - `action=add&key=&type=points|job&...` appends a row
 - The Apps Script is NOT deployed from this repo. Changes to Code.gs must be pasted into the Apps Script editor by Craig and redeployed via Manage deployments, then New version (this keeps the same /exec URL).
@@ -25,7 +25,7 @@ A reward points board for Craig's daughters, Millie (4) and Grace (2). It shows 
 - Grown ups page has tabs: Today (tick off jobs), Points (earn, spend, undo), Plan (jobs for today, tomorrow or every day, for one or both girls).
 - Cards are always side by side: Millie left with the "pop" theme (night concert stage, neon, sparkles), Grace right with the "ice" theme (snowy wonderland, crystal trees, falling snow). Both are original designs. Do not use or imitate characters, logos or artwork from any film or franchise.
 - The TV refreshes every 30 seconds. `patchBoard()` only replaces the card content and week strip so the animated backgrounds keep running. Keep it that way.
-- The week strip shows events from the Family calendar with an icon per event (keyword map in `ICONS`, or a leading emoji in the event title).
+- The week strip under the cards has three columns: Today, This week (the rest of the Monday to Sunday week) and Next week. Up to 3 lines each, ending in "and N more" when there are too many to fit. Icons per event come from the keyword map in `ICONS`, or a leading emoji in the event title.
 - Leaving DATA_URL blank runs demo mode with sample data.
 
 ## Constraints

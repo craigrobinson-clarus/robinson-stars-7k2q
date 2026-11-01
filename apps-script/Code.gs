@@ -30,11 +30,13 @@ function week() {
   if (!CALENDAR_NAME) return null;
   const cal = CalendarApp.getCalendarsByName(CALENDAR_NAME)[0];
   if (!cal) return [];
+  // From today to the end of next week (Monday to Sunday weeks)
   const start = new Date(); start.setHours(0, 0, 0, 0);
-  const end = new Date(start); end.setDate(end.getDate() + 7);
+  const dow = (start.getDay() + 6) % 7;   // Monday is 0
+  const end = new Date(start); end.setDate(end.getDate() + 14 - dow);
   const tz = Session.getScriptTimeZone();
   const f = d => Utilities.formatDate(d, tz, "yyyy-MM-dd'T'HH:mm");
-  return cal.getEvents(start, end).slice(0, 80).map(ev => ({
+  return cal.getEvents(start, end).slice(0, 150).map(ev => ({
     title: ev.getTitle(), start: f(ev.getStartTime()), end: f(ev.getEndTime()), allDay: ev.isAllDayEvent()
   }));
 }
